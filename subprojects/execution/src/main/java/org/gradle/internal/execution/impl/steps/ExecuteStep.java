@@ -16,6 +16,7 @@
 
 package org.gradle.internal.execution.impl.steps;
 
+import com.google.common.collect.ImmutableSortedMap;
 import org.gradle.api.BuildCancelledException;
 import org.gradle.api.GradleException;
 import org.gradle.initialization.BuildCancellationToken;
@@ -24,6 +25,7 @@ import org.gradle.internal.execution.ExecutionOutcome;
 import org.gradle.internal.execution.ExecutionResult;
 import org.gradle.internal.execution.OutputChangeListener;
 import org.gradle.internal.execution.UnitOfWork;
+import org.gradle.internal.fingerprint.CurrentFileCollectionFingerprint;
 
 public class ExecuteStep implements Step<Context> {
 
@@ -56,12 +58,15 @@ public class ExecuteStep implements Step<Context> {
             // TODO Should we catch Exception here?
             failure = new ExecutionException(work, t);
         }
+
+        ImmutableSortedMap<String, CurrentFileCollectionFingerprint> finalOutputs = work.snapshotAfterOutputsGenerated();
+
         if (failure != null) {
-            return ExecutionResult.failure(failure);
+            return ExecutionResult.failure(failure, finalOutputs);
         } else {
             return didWork
-                ? ExecutionResult.success(ExecutionOutcome.EXECUTED)
-                : ExecutionResult.success(ExecutionOutcome.UP_TO_DATE);
+                ? ExecutionResult.success(ExecutionOutcome.EXECUTED, finalOutputs)
+                : ExecutionResult.success(ExecutionOutcome.UP_TO_DATE, finalOutputs);
         }
     }
 }
