@@ -68,11 +68,11 @@ public class BuildCacheCommandFactory {
         this.stringInterner = stringInterner;
     }
 
-    public BuildCacheLoadCommand<LoadMetadata> createLoad(BuildCacheKey cacheKey, SortedSet<CacheableTree> trees, CacheableEntity entity, Iterable<File> localState, BuildCacheLoadListener loadListener) {
+    public BuildCacheLoadCommand<LoadMetadata> createLoad(BuildCacheKey cacheKey, SortedSet<? extends CacheableTree> trees, CacheableEntity entity, Iterable<File> localState, BuildCacheLoadListener loadListener) {
         return new LoadCommand(cacheKey, trees, entity, localState, loadListener);
     }
 
-    public BuildCacheStoreCommand createStore(BuildCacheKey cacheKey, SortedSet<CacheableTree> trees, Map<String, CurrentFileCollectionFingerprint> fingerprints, CacheableEntity entity, long executionTime) {
+    public BuildCacheStoreCommand createStore(BuildCacheKey cacheKey, SortedSet<? extends CacheableTree> trees, Map<String, CurrentFileCollectionFingerprint> fingerprints, CacheableEntity entity, long executionTime) {
         return new StoreCommand(cacheKey, trees, fingerprints, entity, executionTime);
     }
 
@@ -84,12 +84,12 @@ public class BuildCacheCommandFactory {
     private class LoadCommand implements BuildCacheLoadCommand<LoadMetadata> {
 
         private final BuildCacheKey cacheKey;
-        private final SortedSet<CacheableTree> trees;
+        private final SortedSet<? extends CacheableTree> trees;
         private final CacheableEntity entity;
         private final Iterable<File> localState;
         private final BuildCacheLoadListener loadListener;
 
-        private LoadCommand(BuildCacheKey cacheKey, SortedSet<CacheableTree> trees, CacheableEntity entity, Iterable<File> localState, BuildCacheLoadListener loadListener) {
+        private LoadCommand(BuildCacheKey cacheKey, SortedSet<? extends CacheableTree> trees, CacheableEntity entity, Iterable<File> localState, BuildCacheLoadListener loadListener) {
             this.cacheKey = cacheKey;
             this.trees = trees;
             this.entity = entity;
@@ -134,7 +134,7 @@ public class BuildCacheCommandFactory {
                 LOGGER.warn("Cleaning {} after failed load from cache.", entity);
                 try {
                     cleanupTreesAfterUnpackFailure();
-                    loadListener.afterLoad(e);
+                    loadListener.afterLoadFailedAndWasCleanedUp(e);
                 } catch (Exception eCleanup) {
                     LOGGER.warn("Unrecoverable error during cleaning up after unpack failure", eCleanup);
                     throw new UnrecoverableUnpackingException(String.format("Failed to unpack trees for %s, and then failed to clean up; see log above for details", entity), e);
@@ -222,12 +222,12 @@ public class BuildCacheCommandFactory {
     private class StoreCommand implements BuildCacheStoreCommand {
 
         private final BuildCacheKey cacheKey;
-        private final SortedSet<CacheableTree> trees;
+        private final SortedSet<? extends CacheableTree> trees;
         private final Map<String, CurrentFileCollectionFingerprint> fingerprints;
         private final CacheableEntity entity;
         private final long executionTime;
 
-        private StoreCommand(BuildCacheKey cacheKey, SortedSet<CacheableTree> trees, Map<String, CurrentFileCollectionFingerprint> fingerprints, CacheableEntity entity, long executionTime) {
+        private StoreCommand(BuildCacheKey cacheKey, SortedSet<? extends CacheableTree> trees, Map<String, CurrentFileCollectionFingerprint> fingerprints, CacheableEntity entity, long executionTime) {
             this.cacheKey = cacheKey;
             this.trees = trees;
             this.fingerprints = fingerprints;

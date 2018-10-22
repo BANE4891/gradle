@@ -138,7 +138,7 @@ class BuildCacheCommandFactoryTest extends Specification {
         }
 
         then:
-        1 * loadListener.afterLoad(_ as Throwable)
+        1 * loadListener.afterLoadFailedAndWasCleanedUp(_ as Throwable)
 
         then:
         def ex = thrown Exception
